@@ -62,7 +62,7 @@ Game::~Game()
 
 bool Game::loadAssets()
 {
-    gameAreaBackground.loadFromFile(gRenderer, "game/Assets/Images/gameAreaBackground.png");
+    gameAreaBackground.loadFromFile(gRenderer, "Assets/Images/gameAreaBackground.png");
     return true;
 }
 
