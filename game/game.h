@@ -28,6 +28,9 @@ class Game
         //Render the game area background
         void renderGameAreaBackground();
 
+        //Render the logo
+        void renderLogo();
+
         //Screen dimensions
         int SCREEN_WIDTH;
         int SCREEN_HEIGHT;
@@ -41,8 +44,12 @@ class Game
         //Renderer
         SDL_Renderer *gRenderer;
 
-        //Game Area Background
+        //Image Textures
         LTexture gameAreaBackground;
+        LTexture logo;
+
+        
+
 
 };
 
@@ -63,17 +70,24 @@ Game::~Game()
 bool Game::loadAssets()
 {
     gameAreaBackground.loadFromFile(gRenderer, "Assets/Images/gameAreaBackground.png");
+    logo.loadFromFile(gRenderer, "Assets/Images/logo.png");
     return true;
 }
 
 void Game::renderTextures()
 {
     renderGameAreaBackground();
+    renderLogo();
 }
 
 void Game::renderGameAreaBackground()
 {
-    gameAreaBackground.render(gRenderer, SCREEN_WIDTH/2 - gameAreaBackground.getWidth()/2, 200 );
+    gameAreaBackground.render(gRenderer, SCREEN_WIDTH - gameAreaBackground.getWidth() - 75, 35);
+}
+
+void Game::renderLogo()
+{
+    logo.render(gRenderer, 75, 35);
 }
 
 bool Game::startGame()
