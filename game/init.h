@@ -3,8 +3,8 @@
 #include <SDL2/SDL_image.h>
 
 //Screen dimension constants
-const int SCREEN_WIDTH = 1980;
-const int SCREEN_HEIGHT = 1080;
+const int SCREEN_WIDTH = 900;
+const int SCREEN_HEIGHT = 900;
 
 SDL_Renderer *init(SDL_Window *gWindow, SDL_Renderer *gRenderer) {
     bool success = true;
