@@ -44,6 +44,9 @@ class LTexture
         //Set Position
         void setPosition(int x, int y);
 
+        //Get Position
+        void getPosition(int &x, int &y);
+
     private:
         //Hardware Texture
         SDL_Texture* mTexture;
@@ -74,6 +77,12 @@ void LTexture::setPosition(int x, int y)
 {
     mPosition.x = x;
     mPosition.y = y;
+}
+
+void LTexture::getPosition(int &x, int &y)
+{
+    x = mPosition.x;
+    y = mPosition.y;
 }
 
 bool LTexture::loadFromFile( SDL_Renderer *gRenderer, std::string path ) 

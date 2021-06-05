@@ -2,9 +2,71 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 
+#define INIT_H
+
+enum Shapes
+{
+    S_SHAPE,
+    Z_SHAPE,
+    T_SHAPE,
+    L_SHAPE,
+    I_SHAPE,
+    ML_SHAPE,
+    SQR_SHAPE,
+    SHAPE_TOTAL
+};
+
+enum Colors
+{
+    BLUE,
+    GREEN,
+    PURPLE,
+    PINK,
+    RED,
+    YELLOW,
+    TEAL,
+    COLOR_TOTAL
+};
+
+enum FlipMode
+{
+    UP,
+    RIGHT,
+    DOWN,
+    LEFT
+};
+
+enum GamePhase
+{
+    START,
+    ONGOING,
+    QUIT
+};
+
+enum EImage
+{
+    GAMEAREABACKGROUND,
+    LOGO,
+    LEVEL1,
+    LEVEL2,
+    LEVEL3,
+    IMAGE_TOTAL
+};
+
+enum EButton
+{
+    START_BUTTON,
+    STOP_BUTTON,
+    BUTTON_TOTAL
+};
+
+//Grid dimension
+const int GRID_WIDTH = 15;
+const int GRID_HEIGHT = 30;
+
 //Screen dimension constants
-const int SCREEN_WIDTH = 900;
-const int SCREEN_HEIGHT = 900;
+const int SCREEN_WIDTH = 1000;
+const int SCREEN_HEIGHT = 1000;
 
 SDL_Renderer *init(SDL_Window *gWindow, SDL_Renderer *gRenderer) {
     bool success = true;

@@ -2,45 +2,16 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include "ui.h"
+#include <vector>
+#include "shape.h"
 
 #ifndef TEXTURE_H
 #include "texture.h"
 #endif
 
-enum GamePhase
-{
-    START,
-    ONGOING,
-    QUIT
-};
-
-enum EImage
-{
-    GAMEAREABACKGROUND,
-    LOGO,
-    LEVEL1,
-    LEVEL2,
-    LEVEL3,
-    IMAGE_TOTAL
-};
-
-enum EBlock
-{
-    BLUE,
-    GREEN,
-    PURPLE,
-    PINK,
-    RED,
-    YELLOW,
-    BLOCK_TOTAL
-};
-
-enum EButton
-{
-    START_BUTTON,
-    STOP_BUTTON,
-    BUTTON_TOTAL
-};
+#ifndef INIT_H
+#include "init.h"
+#endif
 
 class Game 
 {
@@ -57,9 +28,6 @@ class Game
         //Start Game
         bool startGame();
 
-        //Render Static Textures
-        void renderStaticTextures();
-
         //Free resources
         void free();
 
@@ -70,20 +38,26 @@ class Game
         //Render the game area background
         void renderGameAreaBackground();
 
+        //Render Static Textures
+        void renderStaticTextures();
+
+        //Render dynamic textures
+        void renderDynamicTextures();
+
         //Render the images
         void renderImages();
 
         //Render the Buttons
         void renderButtons();
 
+        //Render current shape
+        void renderCurrentShape();
+
         //Handle UI events
         void handleUIEvents(SDL_Event *e);
 
         //Load Images
         bool loadImages();
-
-        //Load Blocks
-        bool loadBlocks();
 
         //Load Buttons
         bool loadButtons();
@@ -113,11 +87,16 @@ class Game
         //Game Phase
         GamePhase phase;
 
-        //Blocks
-        LTexture blocks[BLOCK_TOTAL];
-
         //Buttons
         LButton buttons[BUTTON_TOTAL];
+
+        //Game grid
+        int grid[GRID_HEIGHT][GRID_WIDTH];
+
+        //Block textures to render
+        std::vector<Block> renderBlocs;
+
+        Shape currentShape = NULL;
 };
 
 Game::Game(int SCREEN_WIDTH, int SCREEN_HEIGHT, SDL_Window *gWindow, SDL_Renderer *gRenderer)
@@ -127,6 +106,9 @@ Game::Game(int SCREEN_WIDTH, int SCREEN_HEIGHT, SDL_Window *gWindow, SDL_Rendere
     this->gWindow = gWindow;
     this->gRenderer = gRenderer;
     this->Gameover = false;
+    for (int i = 0; i < 25; i++)
+        for (int j = 0; j < 25; j++)
+            grid[i][j] = 0;
 }
 
 Game::~Game()
@@ -137,7 +119,6 @@ Game::~Game()
 bool Game::loadAssets()
 {
     if (!loadImages()) return false;
-    if (!loadBlocks()) return false;
     if (!loadButtons()) return false;
     return true;
 }
@@ -146,17 +127,6 @@ bool Game::loadImages()
 {
     if (!images[GAMEAREABACKGROUND].loadFromFile(gRenderer, "Assets/Images/gameAreaBackground.png")) return false;
     if (!images[LOGO].loadFromFile(gRenderer, "Assets/Images/Logo.png")) return false;
-    return true;
-}
-
-bool Game::loadBlocks()
-{
-    if (!blocks[BLUE].loadFromFile(gRenderer, "Assets/Textures/Blocks/Blue_Block.png")) return false;
-    if (!blocks[GREEN].loadFromFile(gRenderer, "Assets/Textures/Blocks/Green_Block.png")) return false;
-    if (!blocks[PINK].loadFromFile(gRenderer, "Assets/Textures/Blocks/Pink_Block.png")) return false;
-    if (!blocks[PURPLE].loadFromFile(gRenderer, "Assets/Textures/Blocks/Purple_Block.png")) return false;
-    if (!blocks[RED].loadFromFile(gRenderer, "Assets/Textures/Blocks/Red_Block.png")) return false;
-    if (!blocks[YELLOW].loadFromFile(gRenderer, "Assets/Textures/Blocks/Yellow_Block.png")) return false;
     return true;
 }
 
@@ -176,13 +146,13 @@ void Game::setTexturePositions()
 void Game::setImagePositions()
 {
     images[GAMEAREABACKGROUND].setPosition(SCREEN_WIDTH - images[GAMEAREABACKGROUND].getWidth() - 75, 35);
-    images[LOGO].setPosition(75, 35);
+    images[LOGO].setPosition(100, 35);
 }
 
 void Game::setButtonPositions()
 {
-    buttons[START_BUTTON].setPosition(175, 300);
-    buttons[STOP_BUTTON].setPosition(175, 400);
+    buttons[START_BUTTON].setPosition(200, 300);
+    buttons[STOP_BUTTON].setPosition(200, 400);
 }
 
 void Game::renderStaticTextures()
@@ -203,10 +173,22 @@ void Game::renderButtons()
         buttons[i].render(gRenderer);
 }
 
+void Game::renderDynamicTextures()
+{
+    renderCurrentShape();
+}
+
+void Game::renderCurrentShape()
+{
+    int x, y;
+    images[GAMEAREABACKGROUND].getPosition(x, y);
+    currentShape.render(gRenderer, x, y);
+}
+
 void Game::handleUIEvents(SDL_Event *e)
 {
     if (buttons[START_BUTTON].handleEvent(e))
-        printf("Game Started!\n");
+        phase = ONGOING;
     
     if (buttons[STOP_BUTTON].handleEvent(e))
         Gameover = true;
@@ -215,6 +197,9 @@ void Game::handleUIEvents(SDL_Event *e)
 bool Game::startGame()
 {
     SDL_Event e;
+    currentShape = Shape(gRenderer);
+    currentShape.setRelativePosition(5, 10);
+    currentShape.loadFromFile(gRenderer);
     loadAssets();
     setTexturePositions();
     phase = START;
@@ -235,7 +220,12 @@ bool Game::startGame()
         if (phase == START)
         {
             renderStaticTextures();
-        } 
+        }
+        else
+        {
+            renderStaticTextures();
+            renderDynamicTextures();
+        }
         SDL_RenderPresent( gRenderer );
     }
     
@@ -246,9 +236,6 @@ void Game::free()
     //Free Textures
     for (int i = 0; i < IMAGE_TOTAL; i++)
         images[i].free();
-    
-    for (int i = 0; i < BLOCK_TOTAL; i++)
-        blocks[i].free();
     
     for (int i = 0; i < BUTTON_TOTAL; i++)
         buttons[i].free();
