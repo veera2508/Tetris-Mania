@@ -5,7 +5,7 @@
 #include <cmath>
 
 #ifndef TEXTURE_H
-#include "texture.h"
+#include "texture.hpp"
 #endif
 
 class LButton 

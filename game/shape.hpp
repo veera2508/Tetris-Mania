@@ -6,11 +6,11 @@
 #include <ctime>
 
 #ifndef TEXTURE_H
-#include "texture.h"
+#include "texture.hpp"
 #endif
 
 #ifndef INIT_H
-#include "init.h"
+#include "init.hpp"
 #endif
 
 class Block

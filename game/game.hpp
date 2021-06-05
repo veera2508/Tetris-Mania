@@ -1,16 +1,16 @@
 #include <stdio.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
-#include "ui.h"
+#include "ui.hpp"
 #include <vector>
-#include "shape.h"
+#include "shape.hpp"
 
 #ifndef TEXTURE_H
-#include "texture.h"
+#include "texture.hpp"
 #endif
 
 #ifndef INIT_H
-#include "init.h"
+#include "init.hpp"
 #endif
 
 class Game 
