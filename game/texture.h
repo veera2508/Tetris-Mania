@@ -3,6 +3,8 @@
 #include <SDL2/SDL_image.h>
 #include <string>
 
+#define TEXTURE_H
+
 class LTexture 
 {
     public:
@@ -24,7 +26,7 @@ class LTexture
         #endif
 
         //Renders texture at a given point
-        void render( SDL_Renderer* gRenderer, int x, int y, SDL_Rect* clip = NULL, double angle = 0.0, SDL_Point* center = NULL, SDL_RendererFlip flip = SDL_FLIP_NONE);
+        void render( SDL_Renderer* gRenderer, SDL_Rect* clip = NULL, double angle = 0.0, SDL_Point* center = NULL, SDL_RendererFlip flip = SDL_FLIP_NONE);
 
         //Set color modulation
         void setColor( Uint8 red, Uint8 green, Uint8 blue );
@@ -39,9 +41,15 @@ class LTexture
         int getWidth();
         int getHeight();
 
+        //Set Position
+        void setPosition(int x, int y);
+
     private:
         //Hardware Texture
         SDL_Texture* mTexture;
+
+        //Render Location
+        SDL_Point mPosition;
 
         //Image Dimensions
         int mWidth;
@@ -53,11 +61,19 @@ LTexture::LTexture()
     mTexture = NULL;
     mWidth = 0;
     mHeight = 0;
+    mPosition.x = 0;
+    mPosition.y = 0;
 }
 
 LTexture::~LTexture() 
 {
     free();
+}
+
+void LTexture::setPosition(int x, int y) 
+{
+    mPosition.x = x;
+    mPosition.y = y;
 }
 
 bool LTexture::loadFromFile( SDL_Renderer *gRenderer, std::string path ) 
@@ -132,9 +148,9 @@ bool LTexture::loadFromRenderedText(std::string textureText, SDL_Color textColor
 }
 #endif
 
-void LTexture::render( SDL_Renderer *gRenderer, int x, int y, SDL_Rect* clip, double angle, SDL_Point* center, SDL_RendererFlip flip ) 
+void LTexture::render( SDL_Renderer *gRenderer, SDL_Rect* clip, double angle, SDL_Point* center, SDL_RendererFlip flip ) 
 {
-    SDL_Rect renderquad = { x, y, mWidth, mHeight };
+    SDL_Rect renderquad = { mPosition.x, mPosition.y, mWidth, mHeight };
     //Set clip rendering dimensions
     if (clip != NULL) 
     {
