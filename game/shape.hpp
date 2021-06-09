@@ -28,6 +28,12 @@ class Block
         //Set relative position
         void setCentrePosition(int x, int y);
 
+        //Get centre position
+        void getCentrePosition(int &x, int &y);
+
+        //Get offset position
+        void getOffsetPosition(int &x, int &y);
+
         //Update offset
         void updateOffset(int off_x, int off_y);
 
@@ -83,6 +89,18 @@ void Block::setCentrePosition(int x, int y)
     this->y = y;
 }
 
+void Block::getCentrePosition(int &x, int &y)
+{
+    x = this->x;
+    y = this->y;
+}
+
+void Block::getOffsetPosition(int &x, int &y)
+{
+    x = this->off_x;
+    y = this->off_y;
+}
+
 void Block::getGridPosition(int &x, int &y)
 {
     x = this->x + off_x;
@@ -113,13 +131,28 @@ class Shape
     public:
 
         //Constructor
-        Shape(SDL_Renderer *gRenderer);
+        Shape(SDL_Renderer *gRenderer, int shape_type = -1);
 
         //Destructor
         ~Shape();
 
+        //Move down
+        void moveDown();
+
+        //Move left
+        void moveLeft();
+
+        //Move right
+        void moveRight();
+
         //Flip if possible
-        bool flipAngle();
+        void flipAngle();
+
+        //Rotate by pi
+        void rotateByPi();
+
+        //Rotate by pi/2
+        void rotateByPi2();
 
         //Set relative position
         void setRelativePosition(int x, int y);
@@ -129,6 +162,9 @@ class Shape
 
         //Get relative position
         void getRelativePosition(int &x, int &y);
+
+        //Check if settled
+        bool checkSettled(int grid[GRID_HEIGHT][GRID_WIDTH]);
 
         //Render
         void render(SDL_Renderer *gRenderer, int grid_x, int grid_y);
@@ -145,16 +181,31 @@ class Shape
 
         //Relative position
         int x, y;
+
+        //Flip mode
+        int flipmode;
+
 };
 
-Shape::Shape(SDL_Renderer *gRenderer)
+Shape::Shape(SDL_Renderer *gRenderer, int shape_type)
 {
-    int randno = rand() % SHAPE_TOTAL;
-    //Set shape type
-    type = Shapes(randno);
+    if (shape_type == -1)
+    {
+        int randno = rand() % SHAPE_TOTAL;
+        //Set shape type
+        type = Shapes(randno);
 
-    //Set shape color
-    color = Colors(randno);
+        //Set shape color
+        color = Colors(randno);
+    }
+    else
+    {
+        //Set shape type
+        type = Shapes(shape_type);
+
+        //Set shape color
+        color = Colors(shape_type);
+    }
 
     switch(type)
     {
@@ -264,4 +315,122 @@ void Shape::render(SDL_Renderer *gRenderer, int grid_x, int grid_y)
 {
     for (int i = 0; i < 4; i++)
         blocks[i].render(gRenderer, grid_x, grid_y);
+}
+
+void Shape::moveLeft()
+{
+    bool outside_grid = false;
+    for (int i = 0; i < 4; i++)
+    {
+        int x, y;
+        blocks[i].getCentrePosition(x, y);
+        blocks[i].setCentrePosition(x - 1, y);
+        if (!blocks[i].checkGrid())
+            outside_grid = true;
+        blocks[i].setCentrePosition(x, y);
+    }
+
+    if (!outside_grid)
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            int x, y;
+            blocks[i].getCentrePosition(x, y);
+            blocks[i].setCentrePosition(x - 1, y);
+        }   
+    }
+}
+
+void Shape::moveRight()
+{
+    bool outside_grid = false;
+    for (int i = 0; i < 4; i++)
+    {
+        int x, y;
+        blocks[i].getCentrePosition(x, y);
+        blocks[i].setCentrePosition(x + 1, y);
+        if (!blocks[i].checkGrid())
+            outside_grid = true;
+        blocks[i].setCentrePosition(x, y);
+    }
+
+    if (!outside_grid)
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            int x, y;
+            blocks[i].getCentrePosition(x, y);
+            blocks[i].setCentrePosition(x + 1, y);
+        }   
+    }
+}
+
+void Shape::moveDown()
+{
+    bool outside_grid = false;
+    for (int i = 0; i < 4; i++)
+    {
+        int x, y;
+        blocks[i].getCentrePosition(x, y);
+        blocks[i].setCentrePosition(x, y + 1);
+        if (!blocks[i].checkGrid())
+            outside_grid = true;
+        blocks[i].setCentrePosition(x, y);
+    }
+
+    if (!outside_grid)
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            int x, y;
+            blocks[i].getCentrePosition(x, y);
+            blocks[i].setCentrePosition(x, y + 1);
+        }   
+    }
+}
+
+void Shape::rotateByPi2()
+{
+    int off_x, off_y;
+    int off_x_rot, off_y_rot;
+    bool outside_grid = false;
+    for (int i = 1; i < 4; i++)
+    {
+        blocks[i].getOffsetPosition(off_x, off_y);
+        off_x_rot = off_x * 0 + off_y * -1;
+        off_y_rot = off_x * 1 + off_y * 0;
+        blocks[i].updateOffset(off_x_rot, off_y_rot);
+        if (!blocks[i].checkGrid())
+            outside_grid = true;
+        blocks[i].updateOffset(off_x, off_y);
+    }
+
+    if (!outside_grid)
+    {
+        for (int i = 1; i < 4; i++)
+        {
+            blocks[i].getOffsetPosition(off_x, off_y);
+            off_x_rot = off_x * 0 + off_y * -1;
+            off_y_rot = off_x * 1 + off_y * 0;
+            blocks[i].updateOffset(off_x_rot, off_y_rot);
+        }
+    }
+}
+
+void Shape::flipAngle()
+{
+    switch(type)
+    {
+        case S_SHAPE:
+        case I_SHAPE:
+        case Z_SHAPE:
+        rotateByPi2();
+        break;
+
+        case T_SHAPE:
+        case L_SHAPE:
+        case ML_SHAPE:
+        rotateByPi2();
+        break;
+    }
 }

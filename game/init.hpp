@@ -28,14 +28,6 @@ enum Colors
     COLOR_TOTAL
 };
 
-enum FlipMode
-{
-    UP,
-    RIGHT,
-    DOWN,
-    LEFT
-};
-
 enum GamePhase
 {
     START,

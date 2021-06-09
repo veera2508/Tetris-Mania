@@ -35,6 +35,9 @@ class Game
         void setTexturePositions();
 
     private:
+        //Create new shape
+        void createNewShape();
+
         //Render the game area background
         void renderGameAreaBackground();
 
@@ -53,8 +56,11 @@ class Game
         //Render current shape
         void renderCurrentShape();
 
-        //Handle UI events
-        void handleUIEvents(SDL_Event *e);
+        //Handle mouse input
+        void handleMouseInput();
+
+        //Handle keyboard input
+        void handleKeyboardInput();
 
         //Load Images
         bool loadImages();
@@ -67,6 +73,9 @@ class Game
 
         //Set button positions
         void setButtonPositions();
+
+        //Examine the grid
+        void examineGrid();
 
         //Screen dimensions
         int SCREEN_WIDTH;
@@ -96,6 +105,10 @@ class Game
         //Block textures to render
         std::vector<Block> renderBlocs;
 
+        //SDL_Event
+        SDL_Event e;
+
+        //The current shape
         Shape currentShape = NULL;
 };
 
@@ -182,27 +195,59 @@ void Game::renderCurrentShape()
 {
     int x, y;
     images[GAMEAREABACKGROUND].getPosition(x, y);
-    currentShape.render(gRenderer, x, y);
+    currentShape.render(gRenderer, x + 12, y + 12);
 }
 
-void Game::handleUIEvents(SDL_Event *e)
+void Game::handleMouseInput()
 {
-    if (buttons[START_BUTTON].handleEvent(e))
+    if (buttons[START_BUTTON].handleEvent(&e))
         phase = ONGOING;
     
-    if (buttons[STOP_BUTTON].handleEvent(e))
+    if (buttons[STOP_BUTTON].handleEvent(&e))
         Gameover = true;
+}
+
+void Game::handleKeyboardInput()
+{
+    switch(e.key.keysym.sym)
+    {
+        case SDLK_DOWN:
+        currentShape.moveDown();
+        break;
+
+        case SDLK_LEFT:
+        currentShape.moveLeft();
+        break;
+
+        case SDLK_RIGHT:
+        currentShape.moveRight();
+        break;
+
+        case SDLK_SPACE:
+        currentShape.flipAngle();
+        break;
+    }
+
+}
+
+void Game::createNewShape()
+{
+    currentShape = Shape(gRenderer, I_SHAPE);
+    currentShape.setRelativePosition(7, 0);
+    currentShape.loadFromFile(gRenderer);
+}
+
+void Game::examineGrid()
+{
+    currentShape.checkSettled(grid);
 }
 
 bool Game::startGame()
 {
-    SDL_Event e;
-    currentShape = Shape(gRenderer);
-    currentShape.setRelativePosition(5, 10);
-    currentShape.loadFromFile(gRenderer);
     loadAssets();
     setTexturePositions();
     phase = START;
+    createNewShape();
     while (!Gameover)
     {
         while (SDL_PollEvent(&e) != 0)
@@ -210,9 +255,14 @@ bool Game::startGame()
             if (e.type == SDL_QUIT)
                 Gameover = true;
             
-            else
+            else if (e.type == SDL_MOUSEBUTTONDOWN)
             {
-                handleUIEvents(&e);
+                handleMouseInput();
+            }
+
+            else if (e.type == SDL_KEYDOWN)
+            {
+                handleKeyboardInput();
             }
         }
         SDL_SetRenderDrawColor( gRenderer, 0x00, 0x00, 0x00, 0xFF );
@@ -227,6 +277,7 @@ bool Game::startGame()
             renderDynamicTextures();
         }
         SDL_RenderPresent( gRenderer );
+        examineGrid();
     }
     
 }
