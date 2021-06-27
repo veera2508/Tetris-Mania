@@ -8,8 +8,11 @@
 class LTexture 
 {
     public:
-        //ConstructorColor Modulation of textures
+        //Constructor
         LTexture();
+
+        //Copy constructor
+        LTexture(const LTexture &t);
 
         //Destructor
         ~LTexture();
@@ -66,6 +69,14 @@ LTexture::LTexture()
     mHeight = 0;
     mPosition.x = 0;
     mPosition.y = 0;
+}
+
+LTexture::LTexture(const LTexture &t)
+{
+    mTexture = t.mTexture;
+    mPosition = t.mPosition;
+    mWidth = t.mWidth;
+    mHeight = t.mHeight;
 }
 
 LTexture::~LTexture() 

@@ -56,6 +56,9 @@ class Game
         //Render current shape
         void renderCurrentShape();
 
+        //Render the blocks
+        void renderBlocks();
+
         //Handle mouse input
         void handleMouseInput();
 
@@ -102,8 +105,11 @@ class Game
         //Game grid
         int grid[GRID_HEIGHT][GRID_WIDTH];
 
-        //Block textures to render
-        std::vector<Block> renderBlocs;
+        //Origin coord
+        int org_x, org_y;
+
+        //Textures to render
+        std::vector<Block> renderQueue;
 
         //SDL_Event
         SDL_Event e;
@@ -160,6 +166,9 @@ void Game::setImagePositions()
 {
     images[GAMEAREABACKGROUND].setPosition(SCREEN_WIDTH - images[GAMEAREABACKGROUND].getWidth() - 75, 35);
     images[LOGO].setPosition(100, 35);
+    images[GAMEAREABACKGROUND].getPosition(org_x, org_y);
+    org_x += 12;
+    org_y += 12;
 }
 
 void Game::setButtonPositions()
@@ -189,13 +198,20 @@ void Game::renderButtons()
 void Game::renderDynamicTextures()
 {
     renderCurrentShape();
+    renderBlocks();
 }
 
 void Game::renderCurrentShape()
 {
-    int x, y;
-    images[GAMEAREABACKGROUND].getPosition(x, y);
-    currentShape.render(gRenderer, x + 12, y + 12);
+    currentShape.render(gRenderer, org_x, org_y);
+}
+
+void Game::renderBlocks()
+{
+    for (auto block: renderQueue)
+    {
+        block.render(gRenderer, org_x, org_y);
+    }
 }
 
 void Game::handleMouseInput()
@@ -232,14 +248,19 @@ void Game::handleKeyboardInput()
 
 void Game::createNewShape()
 {
-    currentShape = Shape(gRenderer, I_SHAPE);
-    currentShape.setRelativePosition(7, 0);
+    currentShape = Shape(gRenderer);
+    currentShape.setRelativePosition(7, 2);
     currentShape.loadFromFile(gRenderer);
 }
 
 void Game::examineGrid()
 {
-    currentShape.checkSettled(grid);
+    if(currentShape.checkSettled(grid))
+    {
+        currentShape.purgeBlocks(renderQueue);
+        printf("%d\n", renderQueue.size());
+        createNewShape();
+    }
 }
 
 bool Game::startGame()
@@ -264,7 +285,9 @@ bool Game::startGame()
             {
                 handleKeyboardInput();
             }
+            examineGrid();
         }
+        examineGrid();
         SDL_SetRenderDrawColor( gRenderer, 0x00, 0x00, 0x00, 0xFF );
         SDL_RenderClear( gRenderer );
         if (phase == START)
@@ -277,7 +300,6 @@ bool Game::startGame()
             renderDynamicTextures();
         }
         SDL_RenderPresent( gRenderer );
-        examineGrid();
     }
     
 }

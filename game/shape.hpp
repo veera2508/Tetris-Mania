@@ -19,11 +19,17 @@ class Block
         //Constructoe
         Block();
 
+        //Copy constructor
+        Block(const Block &b);
+
         //Destructor
         ~Block();
 
         //Check if outside grid
         bool checkGrid();
+
+        //Check if settled
+        bool checkSettled(int grid[GRID_HEIGHT][GRID_WIDTH]);
 
         //Set relative position
         void setCentrePosition(int x, int y);
@@ -60,10 +66,19 @@ class Block
 Block::Block()
 {
     x = GRID_WIDTH/2;
-    y = 0;
+    y = 5;
 
     off_x = 0;
     off_y = 0;
+}
+
+Block::Block(const Block &b)
+{
+    x = b.x;
+    y = b.y;
+    off_x = b.off_x;
+    off_y = b.off_y;
+    texture = b.texture;
 }
 
 Block::~Block()
@@ -124,6 +139,18 @@ void Block::render(SDL_Renderer *gRenderer, int grid_x, int grid_y)
     texture.render(gRenderer);
 }
 
+bool Block::checkSettled(int grid[GRID_HEIGHT][GRID_WIDTH])
+{
+    int x, y;
+    getGridPosition(x, y);
+    
+    //Check if at the bottom
+    if (y == GRID_HEIGHT - 1)
+        return true;
+    
+    return false;
+}
+
 
 
 class Shape
@@ -165,6 +192,9 @@ class Shape
 
         //Check if settled
         bool checkSettled(int grid[GRID_HEIGHT][GRID_WIDTH]);
+
+        //Purge  blocks to renderqueue
+        void purgeBlocks(std::vector<Block> &renderQueue);
 
         //Render
         void render(SDL_Renderer *gRenderer, int grid_x, int grid_y);
@@ -432,5 +462,24 @@ void Shape::flipAngle()
         case ML_SHAPE:
         rotateByPi2();
         break;
+    }
+}
+
+bool Shape::checkSettled(int grid[GRID_HEIGHT][GRID_WIDTH])
+{
+    for (int i = 0; i < 4; i++)
+    {
+        if (blocks[i].checkSettled(grid))
+            return true;
+    }
+    return false;
+}
+
+void Shape::purgeBlocks(std::vector<Block> &renderQueue)
+{
+    for (int i = 0; i < 4; i++)
+    {
+        Block newblock = blocks[i];
+        renderQueue.push_back(newblock);
     }
 }
